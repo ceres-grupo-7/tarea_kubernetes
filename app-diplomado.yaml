@@ -1,0 +1,110 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: diplo-ceres-g7
+  labels:
+    app: diplo-ceres-g7-app
+spec:
+  replicas: 2
+  strategy: 
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: diplo-ceres-g7-app
+  template:
+    metadata:
+      labels:
+        app: diplo-ceres-g7-app
+    spec:
+      containers:
+        - name: multistage
+          image: darobles/tareadocker:1.1
+          ports:
+          - containerPort: 8081
+          resources: {}
+          readinessProbe:
+            httpGet:
+              path: /rest/mscovid/estadoPais?pais=Peru
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 60
+            timeoutSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: /rest/mscovid/estadoPais?pais=Peru
+              port: 8081
+              scheme: HTTP
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+          env:
+          - name: version_java
+            value: "11.0.16"
+          envFrom:
+          - configMapRef:
+                name: devops-config 
+          env:      
+          - name: INTEGRANTES
+            valueFrom:
+                secretKeyRef:
+                  name: secret-devops
+                  key: integrante1      
+          volumeMounts:
+          - mountPath: /volume/localvol
+            name: local-volume
+          - mountPath: /volume/secret
+            name: vol-secret
+      volumes:
+      - name: local-volume
+        emptyDir: {} 
+      - name: vol-secret
+        secret:
+          secretName: secret-devops
+          optional: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: diplo-ceres-g7-lb
+spec:
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8081
+  selector:
+    app: diplo-ceres-g7-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: diplo-ceres-g7-svc
+spec:
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
+  selector:
+    app: diplo-ceres-g7-app
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: diplo-ceres-g7-scaler
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1beta1
+    kind: Deployment
+    name: diplo-ceres-g7
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 50

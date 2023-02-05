@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: devops-config
+data:
+  grupo: "7"
+  modulo: "7"
