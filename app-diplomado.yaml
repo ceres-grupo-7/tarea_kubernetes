@@ -28,7 +28,7 @@ spec:
           resources: {}
           readinessProbe:
             httpGet:
-              path: /rest/mscovid/estadoPais?pais=Peru
+              path: /rest/mscovid/test?msg=testing
               port: 8081
               scheme: HTTP
             initialDelaySeconds: 20
