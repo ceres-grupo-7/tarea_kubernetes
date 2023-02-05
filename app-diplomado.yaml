@@ -52,11 +52,31 @@ spec:
           - configMapRef:
                 name: devops-config 
           env:      
-          - name: INTEGRANTES
+          - name: INTEGRANTES1
             valueFrom:
                 secretKeyRef:
                   name: secret-devops
-                  key: integrante1      
+                  key: integrante1
+          - name: INTEGRANTE2
+            valueFrom:
+                secretKeyRef:
+                  name: secret-devops
+                  key: integrante2    
+          - name: INTEGRANTE3
+            valueFrom:
+                secretKeyRef:
+                  name: secret-devops
+                  key: integrante3    
+          - name: INTEGRANTE4
+            valueFrom:
+                secretKeyRef:
+                  name: secret-devops
+                  key: integrante4    
+          - name: INTEGRANTE5
+            valueFrom:
+                secretKeyRef:
+                  name: secret-devops
+                  key: integrante5                      
           volumeMounts:
           - mountPath: /volume/localvol
             name: local-volume
